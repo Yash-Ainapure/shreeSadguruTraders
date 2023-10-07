@@ -3,18 +3,16 @@ import Form from 'react-bootstrap/Form';
 import 'bootstrap/dist/css/bootstrap.css';
 import { useState } from 'react';
 import './Login.css';
-
 import { useNavigate } from 'react-router-dom';
 
-import { auth } from '../firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth} from '../firebase';
+import { signInWithEmailAndPassword} from 'firebase/auth';
 
 function Login({ setAuthMiddleware }) {
-
    const [isLoading, setLoading] = useState(false);
    const [text, setText] = useState();
    const navigate = useNavigate();
-
+   
    const handleText = (e) => {
       e.preventDefault();
       setText({
@@ -28,8 +26,6 @@ function Login({ setAuthMiddleware }) {
       setLoading(true);
       signInWithEmailAndPassword(auth, text.username, text.password)
          .then((userCredential) => {
-            // const user = userCredential.user;
-            // console.log(user);
             handleSuccess();
             setAuthMiddleware(true);
             setLoading(false);

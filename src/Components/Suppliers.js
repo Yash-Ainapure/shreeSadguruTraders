@@ -1,98 +1,105 @@
-import React, { useEffect } from 'react';
-import { useTable, useSortBy } from 'react-table';
-import { supplierDb } from '../CRUD';
+import './Suppliers.css';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ref, onValue, getDatabase } from 'firebase/database';
+import { createSupplier, deleteSupplier } from '../CRUD';
 
-
-let columns = [
-   {
-      Header: "Address",
-      accessor: "address",
-   },
-   {
-      Header: "Name",
-      accessor: "name",
-   },
-   {
-      Header: "Phone",
-      accessor: "phone"
-   }
-];
-let data = [
-   {
-      address: "gss",
-      name: "yash ainapure",
-      phone: 9850377880
-   },
-   {
-      address: "sgs",
-      name: "raj",
-      phone: 7028925507
-   }
-];
 const Suppliers = () => {
 
+   const database = getDatabase();
    const navigate = useNavigate();
-   const handleAdd = () => {
+   const [isLoading, setIsLoading] = useState(true);
+   const [data, setData] = useState(true);
+   const [newData, setNewData] = useState({ name: "", phone: "" });
+
+   const handleADE = () => {
       navigate('/editsuppliers');
    }
 
    useEffect(() => {
+      const fetchData = async () => {
+         let datadb = [];
+         const cartRef = await ref(database, 'suppliers/');
+         onValue(cartRef, (snapshot) => {
+            try {
+               datadb = Object.values(snapshot.val());
+               if (!!datadb) {
+                  setData(datadb);
+                  setIsLoading(false);
+               } else {
+                  console.log('Data not found');
+                  setIsLoading(false);
+               }
+            } catch (error) {
+               console.log("no values to display: CRUD");
+               setIsLoading(false);
+            }
+         });
+      }
+      fetchData();
+   }, [database])
 
-      data = supplierDb;
-   })
+   const handleChange = (e) => {
+      setNewData({
+         ...newData,
+         [e.target.name]: e.target.value
+      });
+   }
+   const handleAdd = (e) => {
+      e.preventDefault();
+      if (newData === undefined) {
+         console.log("please enter values here : handleAdd");
+      } else if (newData.name === '' || newData.phone === undefined || newData.phone === '') {
+         console.log("please fill all values : handleAdd")
+      } else {
+         createSupplier(newData);
+         setNewData({ name: "", phone: "" });
+      }
+   }
+   const handleDelete = (e) => {
+      e.preventDefault();
+      console.log(e.target.value);
+      if (window.confirm("confirm delete the supplier?") === true) {
+         deleteSupplier(e.target.value);
+      }
+   }
 
-   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
-      columns,
-      data,
-   },
-      useSortBy
-   );
-
+   if (isLoading) {
+      return <p>Loading...</p>
+   }
    return (
-      <div className='Transactions'>
+      <div className='Suppliers'>
          <h2>Suppliers</h2>
-         <div className='TransactionsTable'>
-            <table {...getTableProps}>
-               <thead>
-                  {headerGroups.map((hg) => (
-                     <tr {...hg.getHeaderGroupProps()}>
-                        {
-                           hg.headers.map(header => (
-                              <th {...header.getHeaderProps(header.getSortByToggleProps())}>
-                                 {header.render("Header")}
-                                 {header.isSorted && (
-                                    <span>{header.isSortedDesc ? " ⬇️" : " ⬆️"}</span>
-                                 )}
-                              </th>
-                           ))
-                        }
-                     </tr>
-                  ))}
-               </thead>
-               <tbody {...getTableBodyProps()}>
+         <form>
+            <input value={newData.name} onChange={handleChange} placeholder='Name' type='text' name='name' />
+            <input value={newData.phone} onChange={handleChange} placeholder='Phone no.' type='phone' name='phone' />
+            <button onClick={handleAdd}>Add Supplier</button>
+         </form>
+         <table>
+            <thead>
+               <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Phone</th>
+                  <th>Edit</th>
+                  <th>Delete</th>
+               </tr>
+            </thead>
+            <tbody>
+               {data.map(item => (
+                  <tr key={item.name}>
+                     <td>{item.id}</td>
+                     <td>{item.name}</td>
+                     <td>{item.phone}</td>
+                     <td><button value={item.name} >edt</button></td>
+                     <td><button value={item.name} onClick={handleDelete}>del</button></td>
+                  </tr>
+               ))}
+            </tbody>
+         </table>
 
-                  {
-                     rows.map(row => {
-                        prepareRow(row)
-
-                        return <tr {...row.getRowProps()}>
-                           {
-                              row.cells.map(cell => (
-                                 <td {...cell.getCellProps()}>
-                                    {cell.render("Cell")}
-                                 </td>
-                              ))
-                           }
-                        </tr>
-                     })
-                  }
-
-               </tbody>
-            </table>
-         </div>
          <div className='supplier-operations'>
-            <button onClick={handleAdd}>Add/Delete/Edit Supplier</button>
+            <button onClick={handleADE}>Add/Delete/Edit Supplier</button>
          </div>
       </div>
    )

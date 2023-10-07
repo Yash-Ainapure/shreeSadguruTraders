@@ -1,53 +1,18 @@
-import { getDatabase, ref, onValue, set, push, child, orderByChild, query, equalTo, get ,update} from 'firebase/database';
+import { getDatabase, ref, set, push, child, orderByChild, query, equalTo, get, update } from 'firebase/database';
 
 const database = getDatabase();
-
-//read data operation for Customers data
-let datadb = [];
-const cartRef = ref(database, 'customers/');
-onValue(cartRef, (snapshot) => {
-   try {
-      datadb = Object.values(snapshot.val());
-      if (!!datadb) {
-         console.log(datadb);
-         return datadb
-      } else {
-         console.log('Data not found');
-      }
-   } catch (error) {
-      console.log("no values to display: CRUD");
-   }
-});
-
-
-//read data operation for Supplier data
-let supplierDb = [];
-const supplierCart = ref(database, 'suppliers/');
-onValue(supplierCart, (snapshot) => {
-   supplierDb = Object.values(snapshot.val());
-   if (!!supplierDb) {
-      //console.log(supplierDb);
-   } else {
-      console.log('Data not found');
-   }
-});
-
 
 
 
 // write data operation for create Customers
 const createCustomer = (newData) => {
    const key = push(child(ref(database), 'customers')).key;
-   console.log(key);
-   console.log(newData);
    set(ref(database, 'customers/' + key), newData).then(() => {
       console.log("customer created");
    }).catch((error) => {
       console.log(error);
    });
 }
-
-
 
 
 //Delete data by its value for customer
@@ -79,20 +44,20 @@ const deleteCustomer = async (nameToDelete) => {
 }
 
 
-
-
 //update customer
-const updateCustomer = async (preValue, updateValue) => {
+const updateCustomer = async (preValue, updateValue,phoneValue) => {
    const updateRef = ref(database, 'customers');
    const queryByName = query(updateRef, orderByChild('name'), equalTo(preValue));
    try {
       const snapshot = await get(queryByName);
       snapshot.forEach((childSnapshot) => {
          const keyToUpdate = childSnapshot.key;
-         console.log(keyToUpdate);
-         const updates={};
-         updates['customers/'+keyToUpdate+"/name"]=updateValue;
-         update(ref(database),updates);
+         const updates = {};
+         updates['customers/' + keyToUpdate + "/name"] = updateValue;
+         update(ref(database), updates);
+         updates['customers/' + keyToUpdate + "/phone"] = phoneValue;
+         update(ref(database), updates);
+
          console.log("customer updated successfully");
       });
    } catch (error) {
@@ -101,13 +66,10 @@ const updateCustomer = async (preValue, updateValue) => {
 }
 
 
-
-// write data operation for create Customers
+// write data operation for create Suppliers
 const createSupplier = (newData) => {
 
    const key = push(child(ref(database), 'suppliers')).key;
-   console.log(key);
-   console.log(newData);
    set(ref(database, 'suppliers/' + key), newData).then(() => {
       console.log("supplier created");
    }).catch((error) => {
@@ -115,7 +77,6 @@ const createSupplier = (newData) => {
    });
 
 }
-
 
 
 //Delete data by its value for supplier
@@ -147,8 +108,6 @@ const deleteSupplier = async (nameToDelete) => {
 }
 
 
-
-
 //update customer
 const updateSupplier = async (preValue, updateValue) => {
    const updateRef = ref(database, 'suppliers');
@@ -158,9 +117,9 @@ const updateSupplier = async (preValue, updateValue) => {
       snapshot.forEach((childSnapshot) => {
          const keyToUpdate = childSnapshot.key;
          console.log(keyToUpdate);
-         const updates={};
-         updates['suppliers/'+keyToUpdate+"/name"]=updateValue;
-         update(ref(database),updates);
+         const updates = {};
+         updates['suppliers/' + keyToUpdate + "/name"] = updateValue;
+         update(ref(database), updates);
          console.log("supplier updated successfully");
       });
    } catch (error) {
@@ -168,6 +127,44 @@ const updateSupplier = async (preValue, updateValue) => {
    }
 }
 
+// write data operation for create Pruducts
+const createProduct = (newData) => {
+   const key = push(child(ref(database), 'rates')).key;
+   set(ref(database, 'rates/' + key), newData).then(() => {
+      console.log("Product created");
+   }).catch((error) => {
+      console.log(error);
+   });
+}
+
+//Delete data by its value for supplier
+const deleteProduct = async (nameToDelete) => {
+   if (nameToDelete === null || nameToDelete === undefined) {
+      return console.log("select options OR no values to delete");
+   }
+   const customersRef = ref(database, 'rates');
+   // Query to find the customer with the specified name
+   const queryByName = query(customersRef, orderByChild('name'), equalTo(nameToDelete));
+   try {
+      // Get the snapshot of customers matching the query
+      const snapshot = await get(queryByName);
+      // Loop through the results to get the key(s) and delete the data
+      snapshot.forEach((childSnapshot) => {
+         const keyToDelete = childSnapshot.key;
+         // Delete the customer data
+         set(ref(database, 'rates/' + keyToDelete), null).then(() => {
+            // Success
+            console.log("success deleting the product");
+         })
+            .catch((error) => {
+               console.log("getting an error as ", error);
+            });
+      });
+   } catch (error) {
+      console.error('Error querying customers:', error);
+   }
+}
 
 
-export { supplierDb, createCustomer, deleteCustomer, datadb, updateCustomer,createSupplier ,deleteSupplier,updateSupplier};
+
+export { createCustomer, deleteCustomer, updateCustomer, createSupplier, deleteSupplier, updateSupplier,createProduct ,deleteProduct};

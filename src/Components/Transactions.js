@@ -1,93 +1,73 @@
-import React, { useEffect } from 'react';
-import { useTable, useSortBy } from 'react-table';
+import './Transactions.css';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-//import {datadb} from '../CRUD';
-
-let columns = [
-   {
-      Header: "Name",
-      accessor: "name",
-   },
-   {
-      Header: "Phone",
-      accessor: "phone"
-   }
-];
-let data = [
-   {
-      name: "yash ainapure",
-      phone: 9850377880
-   },
-   {
-      name: "raj",
-      phone: 7028925507
-   }
-];
+import { ref, onValue, getDatabase } from 'firebase/database';
 
 const Transactions = () => {
 
+   const database = getDatabase();
    const navigate = useNavigate();
+   const [isLoading, setIsLoading] = useState(true);
+   const [data, setData] = useState(true);
 
-   const handleUpdate=()=>{
+   const handleUpdate = () => {
       navigate('/edittransactions');
    }
 
-   useEffect(()=>{
-      //data=datadb;
-   })
+   useEffect(() => {
+      const fetchData = async () => {
+         let datadb = [];
+         const cartRef = await ref(database, 'customers/');
+         onValue(cartRef, (snapshot) => {
+            try {
+               datadb = Object.values(snapshot.val());
+               if (!!datadb) {
+                  setData(datadb);
+                  setIsLoading(false);
+               } else {
+                  console.log('Data not found');
+                  setIsLoading(false);
+               }
+            } catch (error) {
+               console.log("no values to display: TRANSACTIONS");
+               setIsLoading(false);
+            }
+         });
+      }
+      fetchData();
+   }, [database])
 
-   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } = useTable({
-      columns,
-      data,
-   },
-      useSortBy
-   );
-
+   if (isLoading) {
+      return <p>Loading...</p>
+   }
    return (
       <div className='Transactions'>
          <h2>Transactions</h2>
-         <div className='TransactionsTable'>
-            <table {...getTableProps}>
-               <thead>
-                  {headerGroups.map((hg) => (
-                     <tr {...hg.getHeaderGroupProps()}>
-                        {
-                           hg.headers.map(header => (
-                              <th {...header.getHeaderProps(header.getSortByToggleProps())}>
-                                 {header.render("Header")}
-                                 {header.isSorted && (
-                                    <span>{header.isSortedDesc ? " ⬇️" : " ⬆️"}</span>
-                                 )}
-                              </th>
-                           ))
-                        }
+         <table>
+            <thead>
+               <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Phone</th>
+
+               </tr>
+            </thead>
+            <tbody>
+                  {data.map(item => (
+                     <tr key={item.name}>
+                        <td>{item.id}</td>
+                        <td>{item.name}</td>
+                        <td>{item.phone}</td>
                      </tr>
                   ))}
-               </thead>
-               <tbody {...getTableBodyProps()}>
+               
+            </tbody>
+         </table>
 
-                  {
-                     rows.map(row => {
-                        prepareRow(row)
-
-                        return <tr {...row.getRowProps()}>
-                           {
-                              row.cells.map(cell => (
-                                 <td {...cell.getCellProps()}>
-                                    {cell.render("Cell")}
-                                 </td>
-                              ))
-                           }
-                        </tr>
-                     })
-                  }
-
-               </tbody>
-            </table>
-         </div>
          <button onClick={handleUpdate}>Add/Delete/Edit Transactions</button>
       </div>
    )
 }
+
 
 export default Transactions
