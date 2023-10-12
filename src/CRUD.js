@@ -2,7 +2,25 @@ import { getDatabase, ref, set, push, child, orderByChild, query, equalTo, get, 
 
 const database = getDatabase();
 
+// write data operation for transactions
+const createTransaction = (personType,personName,productName,productQuantity) => {
+   const dataObj={
+      name:personName,
+      product:productName,
+      quantity:productQuantity
+   };
+   let date=new Date();
+   let year=date.getFullYear();
+   let month=date.getMonth()+1;
+   let day=date.getDate();
 
+   const key = push(child(ref(database), 'transactions')).key;
+   set(ref(database, 'transactions/'+year+"/"+month+"/"+day+"/"+personType+"/" + key), dataObj).then(() => {
+      console.log("transaction created");
+   }).catch((error) => {
+      console.log(error);
+   });
+}
 
 // write data operation for create Customers
 const createCustomer = (newData) => {
@@ -167,4 +185,4 @@ const deleteProduct = async (nameToDelete) => {
 
 
 
-export { createCustomer, deleteCustomer, updateCustomer, createSupplier, deleteSupplier, updateSupplier,createProduct ,deleteProduct};
+export { createCustomer, deleteCustomer, updateCustomer, createSupplier, deleteSupplier, updateSupplier,createProduct ,deleteProduct,createTransaction};

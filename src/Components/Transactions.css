@@ -1,3 +1,10 @@
+#cstmoption{
+   visibility: hidden;
+}
+#supoption{
+   visibility: hidden;
+}
+
 .Transactions{
    background-color: cadetblue;
 }
