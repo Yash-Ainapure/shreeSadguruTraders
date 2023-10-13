@@ -12,10 +12,11 @@ const Transactions = () => {
    const [Cstmdata, setCstmData] = useState(true);
    const [Suppdata, setSuppData] = useState(true);
    const [Proddata, setProdData] = useState(true);
+   const [Transdata, setTransData] = useState(true);
    const [newData, setNewData] = useState({ name: "", phone: "" });
    const [optionSelected, setOptionSelected] = useState();
-   const [name,setName]=useState();
-   const [ProdName,setProdName]=useState();
+   const [name, setName] = useState();
+   const [ProdName, setProdName] = useState();
    const handleUpdate = () => {
       navigate('/edittransactions');
    }
@@ -30,6 +31,7 @@ const Transactions = () => {
          const cartRefCstm = await ref(database, 'customers/');
          const cartRefSup = await ref(database, 'suppliers/');
          const cartRefProd = await ref(database, 'rates/');
+         const cartRefTrans = await ref(database, 'transactions/');
 
          //customer data
          onValue(cartRefCstm, (snapshot) => {
@@ -75,7 +77,24 @@ const Transactions = () => {
                   setProdData(Proddatadb);
                   //setIsLoading(false);
                   countertoCheckAllAreDone = 3;
-                  if (countertoCheckAllAreDone === 3) {
+               } else {
+                  console.log('Data not found');
+                  setIsLoading(false);
+               }
+            } catch (error) {
+               console.log("no values to display: TRANSACTIONS");
+               setIsLoading(false);
+            }
+         });
+
+         //transactions data
+         onValue(cartRefTrans, (snapshot) => {
+            try {
+               datadb = Object.values(snapshot.val());
+               if (!!datadb) {
+                  setTransData(datadb);
+                  countertoCheckAllAreDone = 4;
+                  if (countertoCheckAllAreDone === 4) {
                      setIsLoading(false);
                   }
                } else {
@@ -83,7 +102,7 @@ const Transactions = () => {
                   setIsLoading(false);
                }
             } catch (error) {
-               console.log("no values to display: TRANSACTIONS");
+               console.log("no values to display: TRANSACTIONS", error);
                setIsLoading(false);
             }
          });
@@ -99,10 +118,10 @@ const Transactions = () => {
    }
    const handleAdd = (e) => {
       e.preventDefault();
-      if(optionSelected==="none"||name==="none"||ProdName==="none"||newData.quantity===""||newData.quantity===undefined){
+      if (optionSelected === "none" || name === "none" || ProdName === "none" || newData.quantity === "" || newData.quantity === undefined) {
          return console.log("some data is to be inserted");
       }
-      createTransaction(optionSelected,name,ProdName,newData.quantity);
+      createTransaction(optionSelected, name, ProdName, newData.quantity);
    }
 
    const handleSelectOption = (e) => {
@@ -112,25 +131,42 @@ const Transactions = () => {
       if (e.target.value === "supplier") {
          const dropdownSup = document.getElementById("supoption");
          dropdownSup.style.visibility = "visible";
-         dropdownSup.selectedIndex=0;
+         dropdownSup.selectedIndex = 0;
          const dropdownCst = document.getElementById("cstmoption");
-         dropdownCst.selectedIndex=0;
-         dropdownCst.style.visibility="hidden";
+         dropdownCst.selectedIndex = 0;
+         dropdownCst.style.visibility = "hidden";
       } else if (e.target.value === "customer") {
          const dropdownCst = document.getElementById("cstmoption");
          dropdownCst.style.visibility = "visible";
-         dropdownCst.selectedIndex=0;
+         dropdownCst.selectedIndex = 0;
          const dropdownSup = document.getElementById("supoption");
-         dropdownSup.selectedIndex=0;
-         dropdownSup.style.visibility="hidden";
+         dropdownSup.selectedIndex = 0;
+         dropdownSup.style.visibility = "hidden";
       }
    }
 
-   const handleOption=(e)=>{
+   const handleOption = (e) => {
       setName(e.target.value);
    }
-   const handleProdOption=(e)=>{
+   const handleProdOption = (e) => {
       setProdName(e.target.value);
+   }
+
+   const dateHandler = (e) => {
+      const dateStr = e.target.value;
+      const parts = dateStr.split("-");
+
+      if (parts.length === 3) {
+         const year = parseInt(parts[0]);
+         const month = parseInt(parts[1]);
+         const day = parseInt(parts[2]);
+
+         console.log("Year:", year);
+         console.log("Month:", month);
+         console.log("Day:", day);
+      } else {
+         console.error("Invalid date format");
+      }
    }
 
    if (isLoading) {
@@ -179,21 +215,25 @@ const Transactions = () => {
                <button onClick={handleAdd}>Add Transaction</button>
             </form>
          </div>
+         <div>
+            <input type='date' onChange={dateHandler}></input>
+         </div>
+         <h3>supplier table</h3>
          <table>
             <thead>
                <tr>
-                  <th>ID</th>
                   <th>Name</th>
-                  <th>Phone</th>
-
+                  <th>Product</th>
+                  <th>Quantity</th>
                </tr>
             </thead>
             <tbody>
-               {Suppdata.map(item => (
+            {console.log(Transdata)}
+               {Object.values(Transdata[0][10][12].customer).map(item => (
                   <tr key={item.name}>
-                     <td>{item.id}</td>
                      <td>{item.name}</td>
-                     <td>{item.phone}</td>
+                     <td>{item.product}</td>
+                     <td>{item.quantity}</td>
                   </tr>
                ))}
 
