@@ -13,9 +13,9 @@ const createTransaction = (personType,personName,productName,productQuantity) =>
    let year=date.getFullYear();
    let month=date.getMonth()+1;
    let day=date.getDate();
-
+   //let zero=0;
    const key = push(child(ref(database), 'transactions')).key;
-   set(ref(database, 'transactions/'+year+"/"+month+"/"+day+"/"+personType+"/" + key), dataObj).then(() => {
+   set(ref(database, 'transactions/'+0+"/"+year+"/"+month+"/"+day+"/"+personType+"/" + key), dataObj).then(() => {
       console.log("transaction created");
    }).catch((error) => {
       console.log(error);
@@ -63,17 +63,20 @@ const deleteCustomer = async (nameToDelete) => {
 
 
 //update customer
-const updateCustomer = async (preValue, updateValue,phoneValue) => {
+const updateCustomer = async (preValue, updateValue) => {
    const updateRef = ref(database, 'customers');
-   const queryByName = query(updateRef, orderByChild('name'), equalTo(preValue));
+   const queryByName = query(updateRef, orderByChild('name'), equalTo(preValue.name));
+   if(updateValue.name ===""||updateValue.phone===""){
+      return alert("you cannot enter empty values");
+   }
    try {
       const snapshot = await get(queryByName);
       snapshot.forEach((childSnapshot) => {
          const keyToUpdate = childSnapshot.key;
          const updates = {};
-         updates['customers/' + keyToUpdate + "/name"] = updateValue;
+         updates['customers/' + keyToUpdate + "/name"] = updateValue.name;
          update(ref(database), updates);
-         updates['customers/' + keyToUpdate + "/phone"] = phoneValue;
+         updates['customers/' + keyToUpdate + "/phone"] = updateValue.phone;
          update(ref(database), updates);
 
          console.log("customer updated successfully");
@@ -126,18 +129,24 @@ const deleteSupplier = async (nameToDelete) => {
 }
 
 
-//update customer
+//update supplier
 const updateSupplier = async (preValue, updateValue) => {
    const updateRef = ref(database, 'suppliers');
-   const queryByName = query(updateRef, orderByChild('name'), equalTo(preValue));
+   const queryByName = query(updateRef, orderByChild('name'), equalTo(preValue.name));
+   if(updateValue.name ===""||updateValue.phone===""){
+      return alert("you cannot enter empty values");
+   }
    try {
       const snapshot = await get(queryByName);
       snapshot.forEach((childSnapshot) => {
          const keyToUpdate = childSnapshot.key;
-         console.log(keyToUpdate);
          const updates = {};
-         updates['suppliers/' + keyToUpdate + "/name"] = updateValue;
+         updates['suppliers/' + keyToUpdate + "/name"] = updateValue.name;
          update(ref(database), updates);
+
+         updates['suppliers/' + keyToUpdate + "/phone"] = updateValue.phone;
+         update(ref(database), updates);
+
          console.log("supplier updated successfully");
       });
    } catch (error) {
@@ -183,6 +192,32 @@ const deleteProduct = async (nameToDelete) => {
    }
 }
 
+//update product
+const updateProduct = async (preValue, updateValue) => {
+   const updateRef = ref(database, 'rates');
+   const queryByName = query(updateRef, orderByChild('name'), equalTo(preValue.name));
+   if(updateValue.name ===""||updateValue.phone===""){
+      return alert("you cannot enter empty values");
+   }
+   try {
+      const snapshot = await get(queryByName);
+      snapshot.forEach((childSnapshot) => {
+         const keyToUpdate = childSnapshot.key;
+         const updates = {};
+         updates['rates/' + keyToUpdate + "/name"] = updateValue.name;
+         update(ref(database), updates);
+
+         updates['rates/' + keyToUpdate + "/rate"] = updateValue.rate;
+         update(ref(database), updates);
+
+         console.log("product updated successfully");
+      });
+   } catch (error) {
+      console.log("error catched in catch block  :  ", error);
+   }
+}
 
 
-export { createCustomer, deleteCustomer, updateCustomer, createSupplier, deleteSupplier, updateSupplier,createProduct ,deleteProduct,createTransaction};
+
+
+export { createCustomer, deleteCustomer, updateCustomer, createSupplier, deleteSupplier, updateSupplier,createProduct ,deleteProduct,updateProduct,createTransaction};

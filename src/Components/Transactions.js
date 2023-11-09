@@ -1,5 +1,5 @@
 import './Transactions.css';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ref, onValue, getDatabase } from 'firebase/database';
 import { createTransaction } from '../CRUD';
@@ -17,6 +17,8 @@ const Transactions = () => {
    const [optionSelected, setOptionSelected] = useState();
    const [name, setName] = useState();
    const [ProdName, setProdName] = useState();
+   const [date, setDate] = useState({ day: 12, month: 10, year: 2023 });
+
    const handleUpdate = () => {
       navigate('/edittransactions');
    }
@@ -122,12 +124,18 @@ const Transactions = () => {
          return console.log("some data is to be inserted");
       }
       createTransaction(optionSelected, name, ProdName, newData.quantity);
+
+      //resetting options to null in form
+      setOptionSelected("none");
+      setName("none");
+      setProdName("none");
+      newData.quantity="";
    }
 
    const handleSelectOption = (e) => {
       setOptionSelected(e.target.value);
       setName("none");
-      console.log("options selected", e.target.value);
+      //console.log("options selected", e.target.value);
       if (e.target.value === "supplier") {
          const dropdownSup = document.getElementById("supoption");
          dropdownSup.style.visibility = "visible";
@@ -160,90 +168,106 @@ const Transactions = () => {
          const year = parseInt(parts[0]);
          const month = parseInt(parts[1]);
          const day = parseInt(parts[2]);
-
-         console.log("Year:", year);
-         console.log("Month:", month);
-         console.log("Day:", day);
+         setDate({ day: day, month: month, year: year });
       } else {
          console.error("Invalid date format");
       }
    }
 
+   const supplierData = useMemo(() => {
+      if (Transdata[0] && Transdata[0][date.year] && Transdata[0][date.year][date.month] && Transdata[0][date.year][date.month][date.day] && Transdata[0][date.year][date.month][date.day].customer) {
+         //console.log("data found");
+         return Transdata[0][date.year][date.month][date.day].customer;
+      } else {
+         return []; // Return an empty array or handle the absence of data as needed.
+      }
+   }, [date.year, date.month, date.day, Transdata]);
+
    if (isLoading) {
       return <p>Loading...</p>
    }
-   return (
-      <div className='Transactions'>
-         <h2>Transactions</h2>
-         <div>
-            <form>{/* puschase/sell- dropdown supplier/customer-dropdown product-dropdown quantity-input field */}
+   try {
+      return (
+         <div className='Transactions'>
+            <h2>Transactions</h2>
+            <div>
+               <form>{/* puschase/sell- dropdown supplier/customer-dropdown product-dropdown quantity-input field */}
 
-               <select onChange={handleSelectOption}>
-                  <option>none</option>
-                  <option>supplier</option>
-                  <option>customer</option>
-               </select>
+                  <select value={optionSelected} onChange={handleSelectOption}>
+                     <option value="none">none</option>
+                     <option value="supplier">supplier</option>
+                     <option value="customer">customer</option>
+                  </select>
 
-               <select id='cstmoption' onChange={handleOption}>
-                  <option>none</option>
-                  {
-                     Cstmdata.map((db) => (
-                        <option value={db.name} key={db.name}>{db.name}</option>
-                     ))
-                  }
-               </select>
+                  <select value={name} id='cstmoption' onChange={handleOption}>
+                     <option value="none">none</option>
+                     {
+                        Cstmdata.map((db) => (
+                           <option value={db.name} key={db.name}>{db.name}</option>
+                        ))
+                     }
+                  </select>
 
-               <select id='supoption' onChange={handleOption}>
-                  <option>none</option>
-                  {
-                     Suppdata.map((db) => (
-                        <option value={db.name} key={db.name}>{db.name}</option>
-                     ))
-                  }
-               </select>
+                  <select value={name} id='supoption' onChange={handleOption}>
+                     <option value="none">none</option>
+                     {
+                        Suppdata.map((db) => (
+                           <option value={db.name} key={db.name}>{db.name}</option>
+                        ))
+                     }
+                  </select>
 
-               <select onChange={handleProdOption}>
-                  <option>none</option>
-                  {
-                     Proddata.map((db) => (
-                        <option value={db.name} key={db.name}>{db.name}</option>
-                     ))
-                  }
-               </select>
+                  <select value={ProdName} onChange={handleProdOption}>
+                     <option>none</option>
+                     {
+                        Proddata.map((db) => (
+                           <option value={db.name} key={db.name}>{db.name}</option>
+                        ))
+                     }
+                  </select>
 
-               <input value={newData.quantity} onChange={handleChange} placeholder='Quantity' type='phone' name='quantity' />
-               <button onClick={handleAdd}>Add Transaction</button>
-            </form>
-         </div>
-         <div>
-            <input type='date' onChange={dateHandler}></input>
-         </div>
-         <h3>supplier table</h3>
-         <table>
-            <thead>
-               <tr>
-                  <th>Name</th>
-                  <th>Product</th>
-                  <th>Quantity</th>
-               </tr>
-            </thead>
-            <tbody>
-            {console.log(Transdata)}
-               {Object.values(Transdata[0][10][12].customer).map(item => (
-                  <tr key={item.name}>
-                     <td>{item.name}</td>
-                     <td>{item.product}</td>
-                     <td>{item.quantity}</td>
+                  <input value={newData.quantity} onChange={handleChange} placeholder='Quantity' type='phone' name='quantity' />
+                  <button onClick={handleAdd}>Add Transaction</button>
+               </form>
+            </div>
+            <div>
+               <input type='date' onChange={dateHandler}></input>
+            </div>
+            <h3>supplier table</h3>
+            <table>
+               <thead>
+                  <tr>
+                     <th>Name</th>
+                     <th>Product</th>
+                     <th>Quantity</th>
                   </tr>
-               ))}
+               </thead>
+               <tbody>
+                  {Object.keys(supplierData).length > 0 ? (
+                     Object.values(Transdata[0][date.year][date.month][date.day].customer).map(item => (
+                        <tr key={item.name}>
+                           <td>{item.name}</td>
+                           <td>{item.product}</td>
+                           <td>{item.quantity}</td>
+                        </tr>
+                     ))
+                  ) : (
+                     <tr>
+                        <td colSpan="3">No data to display</td>
+                     </tr>
+                  )}
+               </tbody>
+            </table>
 
-            </tbody>
-         </table>
-
-         <button onClick={handleUpdate}>Add/Delete/Edit Transactions</button>
-      </div>
-   )
+            <button onClick={handleUpdate}>Add/Delete/Edit Transactions</button>
+         </div>
+      )
+   } catch (error) {
+      console.log("error catched in try block");
+      return <p>No values to display</p>
+   }
 }
+
 
 
 export default Transactions

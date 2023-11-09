@@ -1,7 +1,7 @@
 import './Rates.css'
 import React, { useEffect, useState } from 'react'
 import { ref, onValue, getDatabase } from 'firebase/database';
-import { createProduct, deleteProduct } from '../CRUD';
+import { createProduct, deleteProduct, updateProduct } from '../CRUD';
 
 const Rates = () => {
 
@@ -9,6 +9,8 @@ const Rates = () => {
    const [data, setData] = useState(true);
    const [newData, setNewData] = useState({ name: "", rate: "" });
    const database = getDatabase();
+   const [prevData,setPrevData] = useState();
+   const [edit,setEdit] = useState(false);
 
    useEffect(() => {
       const fetchData = async () => {
@@ -51,6 +53,25 @@ const Rates = () => {
       }
    }
 
+   //converts add supplier form to update form 
+   const handleEdit= (name,rate)=>(e)=>{
+      e.preventDefault()
+      setEdit(true);
+      setPrevData({name:name,rate:rate})
+      setNewData({name:name,rate:rate});
+   }
+   //calls updateSupplier from crud file
+   const updateRate=(e)=>{
+      e.preventDefault();
+
+      //gets an error because we hadn't made a function to update both values in CRUD file
+      updateProduct(prevData,newData);
+
+      //resetting the update/add button and its input fields
+      setEdit(false);
+      setNewData({name:"",rate:""});
+   }
+
    const handleDelete = (e) => {
       e.preventDefault();
       if (window.confirm("confirm Delete? ") === true) {
@@ -69,7 +90,7 @@ const Rates = () => {
             <form>
                <input value={newData.name} onChange={handleChange} placeholder='Name' type='text' name='name' />
                <input value={newData.rate} onChange={handleChange} placeholder='Rate.' type='phone' name='rate' />
-               <button onClick={handleAdd}>Add Product</button>
+               <button onClick={edit?updateRate:handleAdd}>{edit?"Update":"Add Rates"}</button>
             </form>
          </div>
          <div>
@@ -89,7 +110,7 @@ const Rates = () => {
                         <td>{item.id}</td>
                         <td>{item.name}</td>
                         <td>{item.rate}</td>
-                        <td><button value={item.name} >edt</button></td>
+                        <td><button value={item.name} onClick={(e)=>handleEdit(item.name,item.rate)(e)}>edt</button></td>
                         <td><button value={item.name} onClick={handleDelete}>del</button></td>
                      </tr>
                   ))}

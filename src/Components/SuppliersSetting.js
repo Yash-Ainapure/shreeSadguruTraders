@@ -10,7 +10,6 @@ const SuppliersSetting = () => {
       try {
          datadb = Object.values(snapshot.val());
          if (!!datadb) {
-            console.log(datadb);
             return datadb
          } else {
             console.log('Data not found');
@@ -48,6 +47,7 @@ const SuppliersSetting = () => {
    const handleSelect = (e) => {
       setSelected(e.target.value);
       //set previous value for update parameter
+      console.log("prev value"+e.target.value)
       setPrevalue(e.target.value);
 
       //set to input value field
@@ -60,6 +60,7 @@ const SuppliersSetting = () => {
       updateSupplier(prevalue, updateValue);
    }
    const handleChangeUpdate = (e) => {
+      console.log("update value : "+e.target.value);
       setUpdateValue(e.target.value);
    }
 

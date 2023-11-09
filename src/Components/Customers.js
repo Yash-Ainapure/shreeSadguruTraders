@@ -1,21 +1,23 @@
 import './Customers.css';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createCustomer, deleteCustomer } from '../CRUD';
+//import { useNavigate } from 'react-router-dom';
+import { createCustomer, deleteCustomer, updateCustomer } from '../CRUD';
 import { ref, onValue, getDatabase } from 'firebase/database';
 
 
 const Customers = () => {
 
    const database = getDatabase();
-   const navigate = useNavigate();
+   // const navigate = useNavigate();
    const [newData, setNewData] = useState({ name: "", phone: "" });
    const [isLoading, setIsLoading] = useState(true);
    const [data, setData] = useState(true);
+   const [edit,setEdit] = useState(false);
+   const [prevData,setPrevData] = useState();
 
-   const handleNavigate = () => {
-      navigate('/editcustomers');
-   }
+   // const handleNavigate = () => {
+   //    navigate('/editcustomers');
+   // }
    useEffect(() => {
       const fetchData = async () => {
          let datadb = [];
@@ -58,6 +60,25 @@ const Customers = () => {
       }
    }
 
+   //converts add supplier form to update form 
+   const handleEdit= (name,phone)=>(e)=>{
+      e.preventDefault()
+      setEdit(true);
+      setPrevData({name:name,phone:phone})
+      setNewData({name:name,phone:phone});
+   }
+   //calls updateSupplier from crud file
+   const updateCustmer=(e)=>{
+      e.preventDefault();
+
+      //gets an error because we hadn't made a function to update both values in CRUD file
+      updateCustomer(prevData,newData);
+
+      //resetting the update/add button and its input fields
+      setEdit(false);
+      setNewData({name:"",phone:""});
+   }
+
    const handleDelete = (e) => {
       e.preventDefault();
       if (window.confirm("confirm Delete? ") === true) {
@@ -74,7 +95,7 @@ const Customers = () => {
          <form>
             <input value={newData.name} onChange={handleChange} placeholder='Name' type='text' name='name' />
             <input value={newData.phone} onChange={handleChange} placeholder='Phone no.' type='phone' name='phone' />
-            <button onClick={handleAdd}>Add Customer</button>
+            <button onClick={edit?updateCustmer:handleAdd}>{edit?"Update":"Add Customer"}</button>
          </form>
          <div className='CustomersTable'>
             <table>
@@ -93,7 +114,7 @@ const Customers = () => {
                         <td>{item.id}</td>
                         <td>{item.name}</td>
                         <td>{item.phone}</td>
-                        <td><button value={item.name} >edt</button></td>
+                        <td><button value={item.name} onClick={(e)=>handleEdit(item.name,item.phone)(e)}>edt</button></td>
                         <td><button value={item.name} onClick={handleDelete}>del</button></td>
                      </tr>
                   ))}
@@ -101,9 +122,9 @@ const Customers = () => {
             </table>
 
          </div>
-         <div className='customers-operations'>
+         {/* <div className='customers-operations'>
             <button onClick={handleNavigate}>Add/Delete/Edit Customer</button>
-         </div>
+         </div> */}
       </div>
    )
 

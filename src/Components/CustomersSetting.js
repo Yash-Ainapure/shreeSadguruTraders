@@ -66,6 +66,7 @@ const CustomersSetting = () => {
    const handleSelect = (e) => {
       let selectedValue = e.target.value;
       setSelected(selectedValue);
+      console.log(selectedValue);
       //set previous value for updateCustomer function parameter
       setPrevalue(selectedValue);
 
