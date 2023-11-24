@@ -15,7 +15,7 @@ function Login({ setAuthMiddleware }) {
    
    const handleText = (e) => {
       e.preventDefault();
-      setText({
+      setText({                                   
          ...text,
          [e.target.name]: e.target.value
       });

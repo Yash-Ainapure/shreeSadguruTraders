@@ -56,7 +56,8 @@ function Home({ AuthMiddleware }) {
                }}><i className="fa-solid fa-right-from-bracket"></i>Logout</a>
             </div>
          </div>
-         <div>
+         
+         <div className='componentDisplayer'>
             {
                targetName === "customers" ? <Customers></Customers> : targetName === "suppliers" ? <Suppliers></Suppliers> : targetName === "transactions" ? <Transactions></Transactions> : targetName === "rates" ? <Rates /> : targetName ==="settings"?<Settings/>:""
             }
