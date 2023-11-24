@@ -17,7 +17,7 @@ function App() {
 
   return (
     <div className="App">
-      <div className="header"><h1>Shree Sadguru Traders</h1></div>
+      {/* <div className="header"><h1>Shree Sadguru Traders</h1></div> */}
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Login setAuthMiddleware={setAuth} />} />
