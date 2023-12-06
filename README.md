@@ -1,3 +1,8 @@
+
+## this project is hosted on - https://shreesadgurutraders-d2a49.web.app/
+## To see the overflow of project you can login through a demo username and password provided here:
+## email - ombhanuse@gmail.com
+## password - 123456
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
